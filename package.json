@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@josephuspaye/chrome-native-bridge": "^0.1.1",
+    "@josephuspaye/pipe-emitter": "^0.1.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Chrome Media Controller",
+  "description": "Chrome Media Controller",
+  "version": "1.0",
+  "manifest_version": 2,
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.youtube.com/*",
+        "https://*.spotify.com/*",
+        "https://play.pocketcasts.com/*",
+        "https://*.slack.com/*",
+        "https://*.youtube-nocookie.com/*",
+        "http://127.0.0.1:8080/*"
+      ],
+      "run_at": "document_start",
+      "js": ["content.js"],
+      "all_frames": true
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "permissions": ["storage", "nativeMessaging"]
+}

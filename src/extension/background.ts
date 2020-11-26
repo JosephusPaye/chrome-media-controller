@@ -50,7 +50,9 @@ function connectToNative() {
 
     if (totalConnectionAttempts <= MAX_CONNECTION_ATTEMPTS) {
       log('will attempt to connect to native host again in 1 minute');
-      chrome.alarms.create('reconnect', { delayInMinutes: 1 });
+      setTimeout(() => {
+        connectToNative();
+      }, 1 * 60 * 1000);
     } else {
       log('native host connection attempts exhausted');
     }
@@ -180,15 +182,6 @@ function onNativeMessage(message: {
   );
 }
 
-/**
- * Handle the script waking up to an alarm
- */
-function onAlarm(alarm: chrome.alarms.Alarm) {
-  if (alarm.name === 'reconnect') {
-    connectToNative();
-  }
-}
-
 function main() {
   // Listen for messages from content scripts
   chrome.runtime.onMessage.addListener(onContentScriptMessage);
@@ -198,9 +191,6 @@ function main() {
     log('tab closed, removing sessions', tabId);
     removeTabSessions(tabId);
   });
-
-  // Listen for alarms
-  chrome.alarms.onAlarm.addListener(onAlarm);
 
   // Connect to the native host
   connectToNative();

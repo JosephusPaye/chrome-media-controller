@@ -20,24 +20,39 @@
   </head>
   <body style="background-color: #eee">
     <div style="width: 400px; margin: 64px auto; text-align: center">
-      <img
-        src="./cover.jpg"
-        style="max-width: 100%"
-        alt="Stand Up Maths Logo"
-      />
-      <div>
-        <div style="font-size: 24px; font-weight: 600; margin-top: 16px">
-          Stand Up Maths Theme Song
+      <div
+        style="
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          background-color: white;
+          border-radius: 8px;
+          overflow: hidden;
+        "
+      >
+        <img
+          src="./cover.jpg"
+          style="max-width: 100%"
+          alt="Image of NAND Cat"
+        />
+        <div style="padding: 24px; padding-top: 16px">
+          <div style="font-size: 24px; font-weight: 600">NAND Cat</div>
+          <audio
+            src="./nyan.mp3"
+            controls
+            loop
+            style="width: 100%; margin-top: 16px"
+          ></audio>
         </div>
-        <audio
-          src="./theme.mp3"
-          controls
-          style="width: 100%; margin-top: 16px"
-        ></audio>
       </div>
 
-      <div style="margin-top: 16px">
-        <iframe width="400" height="226" src="https://www.youtube-nocookie.com/embed/6xi2Bl50XPc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div style="margin-top: 72px; width: 640px; margin-left: -120px">
+        <iframe
+          width="640"
+          height="360"
+          src="https://www.youtube-nocookie.com/embed/6xi2Bl50XPc"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
       </div>
     </div>
 
@@ -46,9 +61,8 @@
 
       audioEl.addEventListener('play', () => {
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: 'StandUp Maths Theme Song',
-          artist: 'StandUp Maths',
-          album: 'StandUp Maths Music',
+          title: 'NAND Cat',
+          artist: 'Stand-up Maths',
           artwork: [
             {
               src: './cover.jpg',
@@ -70,10 +84,10 @@
         audioEl.play();
       });
 
-    //   navigator.mediaSession.setActionHandler('pause', (details) => {
-    //     console.log('pause', { details });
-    //     audioEl.pause();
-    //   });
+      navigator.mediaSession.setActionHandler('pause', (details) => {
+        console.log('pause', { details });
+        audioEl.pause();
+      });
     </script>
   </body>
 </html>

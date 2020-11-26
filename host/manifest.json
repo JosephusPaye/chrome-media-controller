@@ -1,7 +1,0 @@
-{
-  "name": "io.github.josephuspaye.chromemediacontroller",
-  "description": "Chrome Media Controller native host",
-  "path": "main.bat",
-  "type": "stdio",
-  "allowed_origins": ["chrome-extension://ncblghkdkpifalcdbadknadipildgpnh/"]
-}

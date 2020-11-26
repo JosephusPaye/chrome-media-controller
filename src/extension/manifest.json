@@ -1,0 +1,25 @@
+{
+  "name": "Chrome Media Controller",
+  "description": "Control media playback in Chrome from the command-line.",
+  "version": "1.0",
+  "manifest_version": 2,
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.youtube.com/*",
+        "https://*.youtu.be/*",
+        "https://*.youtube-nocookie.com/*",
+        "http://127.0.0.1:8080/*"
+      ],
+      "run_at": "document_start",
+      "js": ["content.js"],
+      "all_frames": true
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "optional_permissions": ["http://*/*", "https://*/*"],
+  "permissions": ["storage", "alarms", "nativeMessaging"]
+}

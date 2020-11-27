@@ -1,14 +1,14 @@
 /**
- * Log the given messages
- */
-function log(...messages: any) {
-  console.log('[cmc injected]', ...messages);
-}
-
-/**
  * Proxy the `navigator.mediaSession` API to go through the extension
  */
 function proxyMediaSessionApi() {
+  /**
+   * Log the given messages
+   */
+  function log(...messages: any) {
+    console.log('[cmc injected]', ...messages);
+  }
+
   /**
    * Media actions handlers registered by the page
    */

@@ -23,7 +23,6 @@ import {
   Session,
   removeTabSessions,
   removeStale,
-  parseSessionId,
 } from './background-support';
 
 const MAX_CONNECTION_ATTEMPTS = 5;
@@ -142,9 +141,10 @@ function onContentScriptMessage(
  * Handle a message from the native host
  */
 function onNativeMessage(message: {
+  tabId?: number;
+  frameId?: number;
   action: string;
-  targetId?: string;
-  args: any[];
+  actionArgs: any[];
 }) {
   log('native message received', message);
 
@@ -154,30 +154,28 @@ function onNativeMessage(message: {
     return;
   }
 
-  if (!message.targetId) {
-    log('ignoring native message with no targetId');
+  const { tabId, frameId } = message;
+
+  if (tabId === undefined) {
+    log('ignoring native message without tabId');
     return;
   }
 
-  const { tabId, frameId } = parseSessionId(message.targetId);
-
-  if (!tabId) {
-    log('ignoring native message where targetId has no tabId');
+  if (frameId === undefined) {
+    log('ignoring native message without frameId');
     return;
   }
 
-  const contentMessage = {
-    action: message.action,
-    tabId,
-    frameId,
-    args: message.args,
-  };
+  if (message.action === undefined) {
+    log('ignoring native message without an action');
+    return;
+  }
 
-  log('sending action message to content script', contentMessage);
+  log('forwarding action message to content script', message);
 
   chrome.tabs.sendMessage(
-    contentMessage.tabId,
-    contentMessage,
+    tabId,
+    message,
     handleLastError('tabs.sendMessage error')
   );
 }

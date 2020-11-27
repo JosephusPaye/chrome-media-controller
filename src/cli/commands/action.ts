@@ -28,7 +28,7 @@ export function createActionCommand(
           actionArgs: undefined,
         });
 
-        console.log(`${command} sent to media session ${id}`);
+        console.log(`${command} command sent to media session ${id}`);
 
         done();
       }

@@ -37,6 +37,7 @@ if (process.env.BUILD === 'production') {
 const files = [
   'src/cli/main.ts',
   'src/cli/support.ts',
+  'src/cli/commands/action.ts',
   'src/cli/commands/ls.ts',
   'src/extension/background.ts',
   'src/extension/content.ts',

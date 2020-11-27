@@ -1,3 +1,7 @@
+import { InjectedToContentMessage, ContentToInjectedMessage } from '../types';
+
+type MediaSessionActionHandler = (details: MediaSessionActionDetails) => void;
+
 /**
  * Proxy the `navigator.mediaSession` API to go through the extension
  */
@@ -12,13 +16,17 @@ function proxyMediaSessionApi() {
   /**
    * Media actions handlers registered by the page
    */
-  const actionHandlers = new Map();
+  const actionHandlers = new Map<
+    MediaSessionAction,
+    MediaSessionActionHandler
+  >();
+
   let hasBeenPlayed = false;
 
   /**
    * Send the given data to the content script
    */
-  function sendToContentScript(data: any) {
+  function sendToContentScript(data: InjectedToContentMessage['data']) {
     const message = { from: 'CMC_INJECTED', data };
     window.postMessage(message, '*');
   }
@@ -27,7 +35,10 @@ function proxyMediaSessionApi() {
    * Sychronise the state of the given mediaSession
    * with the content script
    */
-  function syncState(mediaSession: MediaSession, extra: any = {}) {
+  function syncState(
+    mediaSession: MediaSession,
+    extra?: { actionAdded: string } | { actionRemoved: string }
+  ) {
     let metadata = null;
 
     if (mediaSession.metadata) {
@@ -72,7 +83,7 @@ function proxyMediaSessionApi() {
         if (key === 'setActionHandler') {
           function setActionHandlerWrapped(
             action: MediaSessionAction,
-            handler: (details: MediaSessionActionDetails) => void
+            handler: MediaSessionActionHandler
           ) {
             if (handler === null) {
               // `null` is used to remove action handlers
@@ -136,7 +147,7 @@ function proxyMediaSessionApi() {
   // on the window.postMessage interface.
   window.addEventListener(
     'message',
-    (event) => {
+    (event: MessageEvent<ContentToInjectedMessage>) => {
       const message = event.data;
 
       // Ignore messages not from the content script
@@ -146,18 +157,14 @@ function proxyMediaSessionApi() {
       }
 
       // Act on action messages like play, pause, etc
-      if (message.data.action) {
-        const handler = actionHandlers.get(message.data.action);
+      const handler = actionHandlers.get(message.data.action);
 
-        log('triggering action from content script', handler);
+      log('triggering action from content script', handler);
 
-        if (handler) {
-          handler({ action: message.data.action });
-        } else {
-          log('action not found:', message.data);
-        }
+      if (handler) {
+        handler({ action: message.data.action, ...message.data.actionArgs });
       } else {
-        log('message from content script without action', message);
+        log('action not found:', message.data);
       }
 
       event.returnValue = true;

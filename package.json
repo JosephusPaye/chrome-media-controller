@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@josephuspaye/chrome-native-bridge": "^0.2.1",
-    "@josephuspaye/pipe-emitter": "^0.1.0",
+    "@josephuspaye/pipe-emitter": "^0.2.1",
     "sade": "^1.7.4",
     "tslib": "^2.0.3",
     "webext-domain-permission-toggle": "^1.0.1",

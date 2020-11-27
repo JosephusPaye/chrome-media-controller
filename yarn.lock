@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@josephuspaye/chrome-native-bridge/-/chrome-native-bridge-0.2.1.tgz#56d4f1c3e2e26b2e399c1156c7d6340f197049d9"
   integrity sha512-afOIFjjGaHy3HhqS9Plti+QOLcOkOpY6dpMgNboP3OI6HHsHl6khrb85xTlQiDUuIwIzJB+zIUDaegq3oINa/w==
 
-"@josephuspaye/pipe-emitter@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@josephuspaye/pipe-emitter/-/pipe-emitter-0.1.0.tgz#d2cfe2ed477aff021f215d9ffcc1260106caa0cc"
-  integrity sha512-cobU1N1z3WEotNgeGRxcpSXS4h28Z/obGDIqr6DuKkiKpMtvEpWbkRMy7h6mMX6EZ+LcgDcvqYYM6LHCjQsMHg==
+"@josephuspaye/pipe-emitter@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@josephuspaye/pipe-emitter/-/pipe-emitter-0.2.1.tgz#833f3a12d2b8cb0698629ec42a9cc047f3bdcdaf"
+  integrity sha512-rQx2YMte8u2atuwgHoCGunuz4b3hKjDCJDuB4bfHili96OFtj6LfntrDZGjcxb7RABKFUsjA2oIaibYb8J/f7g==
   dependencies:
     mitt "^2.1.0"
 

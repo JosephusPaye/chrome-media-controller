@@ -1,3 +1,10 @@
+import {
+  BackgroundToContentMessage,
+  ContentToBackgroundMessage,
+  InjectedToContentMessage,
+  ContentToInjectedMessage,
+} from '../types';
+
 import { injectProxy } from './injected';
 
 // The current frame's ID. Used to identify multiple
@@ -20,21 +27,24 @@ function log(...messages: any) {
 /**
  * Send the given data to the injected script
  */
-function sendToInjectedScript(data: any) {
+function sendToInjectedScript(data: ContentToInjectedMessage['data']) {
   window.postMessage({ from: 'CMC_CONTENT', data }, '*');
 }
 
 /**
  * Send the given data to the background script
  */
-function sendToBackgroundScript(data: any) {
+function sendToBackgroundScript(
+  message: ContentToBackgroundMessage,
+  responseCallback?: (response: any) => void
+) {
   if (extensionContextInvalidated) {
     log('not sending to background, extension context invalidated');
     return;
   }
 
   try {
-    chrome.runtime.sendMessage({ from: 'CMC_CONTENT', data });
+    chrome.runtime.sendMessage(message, responseCallback);
   } catch (err) {
     log('unable to send to background script', err);
     extensionContextInvalidated = true;
@@ -45,7 +55,7 @@ function sendToBackgroundScript(data: any) {
  * Handle messages from the injected script by forwarding
  * them to the background script
  */
-function onInjectScriptMessage(event: MessageEvent<any>) {
+function onInjectScriptMessage(event: MessageEvent<InjectedToContentMessage>) {
   const message = event.data;
 
   // Since we're using the public window.postMessage, messages could
@@ -70,7 +80,7 @@ function onInjectScriptMessage(event: MessageEvent<any>) {
  * to the injected script
  */
 function onBackgroundScriptMessage(
-  message: any,
+  message: BackgroundToContentMessage,
   sender: chrome.runtime.MessageSender,
   sendResponse: (response?: any) => void
 ) {
@@ -92,16 +102,13 @@ function main() {
   // unloaded on navigation or tab close.
   window.addEventListener('unload', () => {
     log('unload triggered, sending message to background');
-    sendToBackgroundScript({ type: 'unload' });
+    sendToBackgroundScript({ type: 'unloaded' });
   });
 
   // Get the current frame's ID from the background script
-  chrome.runtime.sendMessage(
-    { from: 'CMC_CONTENT', data: { type: 'get-frame-id' } },
-    (response) => {
-      currentFrameId = response.frameId;
-    }
-  );
+  sendToBackgroundScript({ type: 'get-frame-id' }, (response) => {
+    currentFrameId = response.frameId;
+  });
 
   // Listen for messages from the background script
   chrome.runtime.onMessage.addListener(onBackgroundScriptMessage);

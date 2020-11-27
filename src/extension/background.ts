@@ -15,15 +15,30 @@
  */
 
 import {
+  NativeToChromeMessage,
+  ChromeToNativeMessage,
+  ContentToBackgroundMessage,
+  BackgroundToContentMessage,
+  Session,
+} from '../types';
+
+import {
   log,
   error,
   handleLastError,
   getSessions,
   storeSessions,
-  Session,
   removeTabSessions,
   removeStale,
 } from './background-support';
+
+type SendToContent = (
+  tabId: number,
+  message: BackgroundToContentMessage,
+  responseCallback?: ((response: any) => void) | undefined
+) => void;
+
+type SendToNative = (message: ChromeToNativeMessage) => void;
 
 const MAX_CONNECTION_ATTEMPTS = 5;
 
@@ -49,9 +64,7 @@ function connectToNative() {
 
     if (totalConnectionAttempts <= MAX_CONNECTION_ATTEMPTS) {
       log('will attempt to connect to native host again in 1 minute');
-      setTimeout(() => {
-        connectToNative();
-      }, 1 * 60 * 1000);
+      setTimeout(connectToNative, 1 * 60 * 1000);
     } else {
       log('native host connection attempts exhausted');
     }
@@ -76,7 +89,9 @@ function syncSessions(
     }
   }
 
-  nativePort?.postMessage({ type: 'sync', sessions });
+  if (nativePort) {
+    (nativePort.postMessage as SendToNative)({ type: 'sync', sessions });
+  }
 
   log('sent sync message', { type: 'sync', sessions });
 
@@ -87,14 +102,14 @@ function syncSessions(
  * Listen for messages from the content scripts in tabs
  */
 function onContentScriptMessage(
-  message: any,
+  message: ContentToBackgroundMessage,
   sender: chrome.runtime.MessageSender,
   sendResponse: (response?: any) => void
 ) {
   log('message from content script', message, sender);
 
   // Handle a `get-frame-id` request
-  if (message.data.type === 'get-frame-id') {
+  if (message.type === 'get-frame-id') {
     sendResponse({ frameId: sender.frameId });
     return;
   }
@@ -108,9 +123,9 @@ function onContentScriptMessage(
   // Each media session is uniquely identified by its tab and frame ID
   const id = sender.tab.id + '.' + sender.frameId;
 
-  const contentUnloaded = message.data.type === 'unload';
+  const contentUnloaded = message.type === 'unloaded';
   const playActionRemoved =
-    message.data.type === 'sync' && message.data.actionRemoved === 'play';
+    message.type === 'sync' && message.actionRemoved === 'play';
 
   // Remove sessions that have unloaded or had their play action removed
   if (contentUnloaded || playActionRemoved) {
@@ -122,16 +137,17 @@ function onContentScriptMessage(
     return;
   }
 
-  if (message.data.type === 'sync') {
+  // Sync sessions with the native host when getting a 'sync' message
+  if (message.type === 'sync') {
     syncSessions({
       type: 'add',
       session: {
         id,
         origin: (sender as any).origin,
-        state: message.data.state,
-        actions: message.data.actions,
+        state: message.state,
+        actions: message.actions,
         lastSyncAt: Date.now(),
-        hasBeenPlayed: message.data.hasBeenPlayed,
+        hasBeenPlayed: message.hasBeenPlayed,
       },
     });
   }
@@ -140,12 +156,7 @@ function onContentScriptMessage(
 /**
  * Handle a message from the native host
  */
-function onNativeMessage(message: {
-  tabId?: number;
-  frameId?: number;
-  action: string;
-  actionArgs: any[];
-}) {
+function onNativeMessage(message: NativeToChromeMessage) {
   log('native message received', message);
 
   if (message.action === 'request-sync') {
@@ -154,27 +165,10 @@ function onNativeMessage(message: {
     return;
   }
 
-  const { tabId, frameId } = message;
-
-  if (tabId === undefined) {
-    log('ignoring native message without tabId');
-    return;
-  }
-
-  if (frameId === undefined) {
-    log('ignoring native message without frameId');
-    return;
-  }
-
-  if (message.action === undefined) {
-    log('ignoring native message without an action');
-    return;
-  }
-
   log('forwarding action message to content script', message);
 
-  chrome.tabs.sendMessage(
-    tabId,
+  (chrome.tabs.sendMessage as SendToContent)(
+    message.tabId,
     message,
     handleLastError('tabs.sendMessage error')
   );
@@ -185,7 +179,7 @@ function main() {
   chrome.runtime.onMessage.addListener(onContentScriptMessage);
 
   // Listen for closed tabs and remove any sessions from them
-  chrome.tabs.onRemoved.addListener(function (tabId) {
+  chrome.tabs.onRemoved.addListener((tabId) => {
     log('tab closed, removing sessions', tabId);
     removeTabSessions(tabId);
   });

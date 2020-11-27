@@ -1,23 +1,4 @@
-export interface Sessions {
-  [id: string]: Session;
-}
-
-export interface Session {
-  id: string;
-  origin: string;
-  state: {
-    metadata: MediaMetadata | null;
-    playbackState: MediaSessionPlaybackState;
-  };
-  actions: string[];
-  hasBeenPlayed: boolean;
-  lastSyncAt: number;
-}
-
-export interface SessionId {
-  tabId?: number;
-  frameId?: number;
-}
+import { Sessions, SessionSource } from '../types';
 
 export const data: { sessions: Sessions } = {
   sessions: {},
@@ -97,8 +78,8 @@ const sessionIdRegex = /(\d+)\.(\d+)/;
 /**
  * Parse the given sesison id into tabId and frameId
  */
-export function parseSessionId(id: number | string): SessionId {
-  const parsed: SessionId = {
+export function parseSessionId(id: number | string): Partial<SessionSource> {
+  const parsed: Partial<SessionSource> = {
     tabId: undefined,
     frameId: undefined,
   };

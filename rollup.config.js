@@ -2,6 +2,7 @@ import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
+import path from 'path';
 
 const devModeReplace = replace({
   __DEV__: process.env.BUILD !== 'production',
@@ -33,63 +34,29 @@ if (process.env.BUILD === 'production') {
   );
 }
 
-export default [
-  {
-    input: 'src/install.ts',
-    output: {
-      file: 'dist/install.js',
-      format: 'cjs',
-    },
-    plugins: nodePlugins,
-  },
-  {
-    input: 'src/uninstall.ts',
-    output: {
-      file: 'dist/uninstall.js',
-      format: 'cjs',
-    },
-    plugins: nodePlugins,
-  },
-  {
-    input: 'src/extension/background.ts',
-    output: {
-      file: 'dist/extension/background.js',
-      format: 'iife',
-      name: 'cmcBackground',
-    },
-    plugins: browserPlugins,
-  },
-  {
-    input: 'src/extension/content.ts',
-    output: {
-      file: 'dist/extension/content.js',
-      format: 'iife',
-      name: 'cmcContent',
-    },
-    plugins: browserPlugins,
-  },
-  {
-    input: 'src/host/main.ts',
-    output: {
-      file: 'dist/host/main.js',
-      format: 'cjs',
-    },
-    plugins: nodePlugins,
-  },
-  {
-    input: 'src/cli/support.ts',
-    output: {
-      file: 'dist/cli/support.js',
-      format: 'cjs',
-    },
-    plugins: nodePlugins,
-  },
-  {
-    input: 'src/cli/main.ts',
-    output: {
-      file: 'dist/cli/main.js',
-      format: 'cjs',
-    },
-    plugins: nodePlugins,
-  },
+const files = [
+  'src/cli/main.ts',
+  'src/cli/support.ts',
+  'src/cli/commands/ls.ts',
+  'src/extension/background.ts',
+  'src/extension/content.ts',
+  'src/host/main.ts',
+  'src/install.ts',
+  'src/uninstall.ts',
 ];
+
+const config = files.map((file) => {
+  const isForBrowser = file.includes('/extension/');
+
+  return {
+    input: file,
+    output: {
+      file: file.replace('src/', 'dist/').replace('.ts', '.js'),
+      format: isForBrowser ? 'iife' : 'cjs',
+      name: isForBrowser ? path.basename(file, '.ts') : undefined,
+    },
+    plugins: isForBrowser ? browserPlugins : nodePlugins,
+  };
+});
+
+export default config;

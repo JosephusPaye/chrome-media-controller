@@ -34,9 +34,9 @@ program
   .action(createActionCommand('next', 'nexttrack'));
 
 program
-  .command('previous <id>')
+  .command('prev <id>')
   .describe('Skip to the previous track in a media session')
-  .action(createActionCommand('previous', 'previoustrack'));
+  .action(createActionCommand('prev', 'previoustrack'));
 
 program
   .command('seek <id> <offset>')

@@ -6,7 +6,7 @@ export type CliCommand =
   | 'toggle'
   | 'seek'
   | 'next'
-  | 'previous'
+  | 'prev'
   | 'stop'
   | 'skipad';
 

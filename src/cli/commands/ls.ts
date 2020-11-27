@@ -3,10 +3,10 @@ import { waitForSessions } from '../support';
 export const actionToCommand = {
   play: 'play',
   pause: 'pause',
-  seekbackward: 'seek',
-  seekforward: 'seek',
   seekto: 'seek',
-  previoustrack: 'previous',
+  seekbackward: 'seekb',
+  seekforward: 'seekf',
+  previoustrack: 'prev',
   nexttrack: 'next',
   skipad: 'skipad',
   stop: 'stop',

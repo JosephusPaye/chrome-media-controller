@@ -1,13 +1,19 @@
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import strip from '@rollup/plugin-strip';
+import replace from '@rollup/plugin-replace';
 
-const nodePlugins = [typescript()];
+const devModeReplace = replace({
+  __DEV__: process.env.BUILD !== 'production',
+});
+
+const nodePlugins = [typescript(), devModeReplace];
 
 const browserPlugins = [
   // CommonJS plugin is necessary to expand imports inline,
   // otherwise you get require() calls in the bundle
   typescript({ module: 'CommonJS' }),
+  devModeReplace,
   commonjs({ extensions: ['.js', '.ts'] }),
 ];
 
@@ -66,6 +72,14 @@ export default [
     input: 'src/host/main.ts',
     output: {
       file: 'dist/host/main.js',
+      format: 'cjs',
+    },
+    plugins: nodePlugins,
+  },
+  {
+    input: 'src/cli/support.ts',
+    output: {
+      file: 'dist/cli/support.js',
       format: 'cjs',
     },
     plugins: nodePlugins,

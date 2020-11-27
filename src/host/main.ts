@@ -4,15 +4,23 @@ import { Server } from '@josephuspaye/pipe-emitter';
 import { ChromeNativeBridge } from '@josephuspaye/chrome-native-bridge';
 
 function createLogger() {
-  const filePath = path.join(__dirname, 'log.txt');
-  return fs.createWriteStream(filePath, { fd: fs.openSync(filePath, 'a') });
+  if (__DEV__) {
+    const filePath = path.join(__dirname, 'log.txt');
+    return fs.createWriteStream(filePath, { fd: fs.openSync(filePath, 'a') });
+  } else {
+    return undefined;
+  }
 }
 
 const logFile = createLogger();
 
-function log(data: any, done?: any) {
-  logFile.write(JSON.stringify(data, null, '  '));
-  logFile.write('\n', done);
+function log(data: any, done?: (...args: any[]) => void) {
+  if (__DEV__) {
+    logFile?.write(JSON.stringify(data, null, '  '));
+    logFile?.write('\n', done);
+  } else {
+    done && done();
+  }
 }
 
 function onExit(event: string, ...args: any[]) {

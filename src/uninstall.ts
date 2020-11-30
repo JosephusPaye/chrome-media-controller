@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 
 if (process.platform === 'win32') {
-  console.log('Removing native messaging host from registry...');
+  console.log('removing native messaging host from registry...');
 
   const installerPath = path.win32.join(__dirname, 'host', 'uninstall.bat');
   const cmd = spawn('cmd.exe', ['/c', installerPath]);

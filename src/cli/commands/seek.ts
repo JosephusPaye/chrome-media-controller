@@ -1,5 +1,5 @@
 import { SeekAbsoluteMessage, SeekRelativeMessage } from '../../types';
-import { waitForSessions } from '../support';
+import { waitForSessions, print } from '../support';
 
 export function createSeekCommand(
   command: 'seekb' | 'seekf' | 'seek',
@@ -9,7 +9,7 @@ export function createSeekCommand(
     const offset = parseTimeString(offsetInput);
 
     if (!offset) {
-      console.log('invalid seek offset:', offsetInput);
+      print('invalid seek offset:', offsetInput);
       return;
     }
 
@@ -17,7 +17,7 @@ export function createSeekCommand(
       { getSessionById: id },
       ({ client, done, session, sessionSource }) => {
         if (session?.actions.includes(action) === false) {
-          console.log(`media session ${id} doesn't support ${command} command`);
+          print(`media session ${id} doesn't support ${command} command`);
           done();
         }
 
@@ -34,7 +34,7 @@ export function createSeekCommand(
 
           client.emit('message', message);
 
-          console.log(`seek sent to media session ${id}`, message);
+          print(`seek sent to media session ${id}`, message);
         } else {
           const message: SeekRelativeMessage = {
             tabId: sessionSource!.tabId,
@@ -47,7 +47,7 @@ export function createSeekCommand(
 
           client.emit('message', message);
 
-          console.log(`seek sent to media session ${id}`, message);
+          print(`seek sent to media session ${id}`, message);
         }
 
         done();

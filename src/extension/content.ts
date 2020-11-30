@@ -21,7 +21,9 @@ let extensionContextInvalidated = false;
  * Log the given messages
  */
 function log(...messages: any) {
-  console.log('[cmc content]', ...messages);
+  if (__DEV__) {
+    console.log('[cmc content]', ...messages);
+  }
 }
 
 /**

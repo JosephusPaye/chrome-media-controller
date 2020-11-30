@@ -1,6 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
-import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
 import path from 'path';
 
@@ -17,22 +16,6 @@ const browserPlugins = [
   devModeReplace,
   commonjs({ extensions: ['.js', '.ts'] }),
 ];
-
-if (process.env.BUILD === 'production') {
-  nodePlugins.push(
-    strip({
-      include: 'src/extension/*.ts',
-      functions: ['console.log'],
-    })
-  );
-
-  browserPlugins.push(
-    strip({
-      include: 'src/extension/*.ts',
-      functions: ['console.log'],
-    })
-  );
-}
 
 const files = [
   'src/cli/main.ts',

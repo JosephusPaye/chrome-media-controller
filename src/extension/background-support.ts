@@ -11,7 +11,9 @@ export const data: { sessions: Sessions } = {
  * Log the given messages
  */
 export function log(...messages: any) {
-  console.log('[cmc background]', ...messages);
+  if (__DEV__) {
+    console.log('[cmc background]', ...messages);
+  }
 }
 
 /**

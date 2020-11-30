@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 
 if (process.platform === 'win32') {
-  console.log('Adding native messaging host to registry...');
+  console.log('adding native messaging host to registry...');
 
   const installerPath = path.win32.join(__dirname, 'host', 'install.bat');
   const cmd = spawn('cmd.exe', ['/c', installerPath]);

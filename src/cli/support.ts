@@ -7,19 +7,29 @@ import {
   ChromeToNativeMessage,
 } from '../types';
 
+export function log(...messages: any[]) {
+  if (__DEV__) {
+    console.log(...messages);
+  }
+}
+
+export function print(...messages: any[]) {
+  console.log(...messages);
+}
+
 export function connect() {
   const client = new Client<NativeToChromeMessage, ChromeToNativeMessage>(
     'chrome-media-controller',
     {
       onError(error) {
         if (error.type === 'SOCKET_ERROR') {
-          console.log(
-            'unable to connect to Chrome:',
+          print(
+            'unable to communicate with Chrome:',
             error.type,
             '\ncheck that Chrome is running and that the extension is enabled'
           );
         } else {
-          console.log('Unable to communicate with Chrome:', error.type);
+          print('unable to communicate with Chrome:', error.type);
         }
         process.exit();
       },
@@ -27,7 +37,7 @@ export function connect() {
         client.emit('message', { action: 'request-sync' });
       },
       onDisconnect() {
-        console.log('disconnected from Chrome');
+        print('disconnected from Chrome');
         process.exit();
       },
     }
@@ -97,7 +107,7 @@ export function waitForSessions(
 
   if (timeout.delay > 0) {
     timeoutRef = setTimeout(() => {
-      console.log(timeout.message);
+      print(timeout.message);
       cleanUp();
       process.exit();
     }, timeout.delay * 1000);
@@ -111,7 +121,7 @@ export function waitForSessions(
   }
 
   client.on('message', (message) => {
-    console.log('message received', message);
+    log('message received', message);
 
     if (message?.type === 'sync') {
       const sessions = message.sessions as Sessions;
@@ -122,7 +132,7 @@ export function waitForSessions(
         session = sessions[getSessionById];
 
         if (!session) {
-          console.log('media session not found:', getSessionById);
+          print('media session not found:', getSessionById);
           done();
         }
       }
@@ -172,11 +182,8 @@ export function parseSessionId(id: number | string): Partial<SessionSource> {
 export function validateSessionId(id: string | number): SessionSource {
   const { tabId, frameId } = parseSessionId(id);
 
-  if (tabId === undefined) {
-    console.log('invalid session id: missing tab id');
-    process.exit();
-  } else if (frameId === undefined) {
-    console.log('invalid session id: missing frame id');
+  if (tabId === undefined || frameId === undefined) {
+    print('invalid session id');
     process.exit();
   }
 

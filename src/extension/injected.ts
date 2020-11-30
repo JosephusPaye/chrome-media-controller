@@ -14,7 +14,9 @@ function proxyMediaSessionApi() {
    * Log the given messages
    */
   function log(...messages: any) {
-    console.log('[cmc injected]', ...messages);
+    if (__DEV__) {
+      console.log('[cmc injected]', ...messages);
+    }
   }
 
   /**

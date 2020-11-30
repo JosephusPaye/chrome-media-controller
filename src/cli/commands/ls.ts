@@ -1,4 +1,4 @@
-import { waitForSessions } from '../support';
+import { waitForSessions, print } from '../support';
 
 export const actionToCommand = {
   play: 'play',
@@ -19,21 +19,21 @@ export function ls(options: { all: boolean }) {
     });
 
     if (list.length === 0) {
-      console.log('no media sessions found');
+      print('no media sessions found');
       done();
     }
 
     list.forEach((session) => {
-      console.log(
+      print(
         session.id,
         `(${session.state.playbackState.replace('none', 'unknown')})`,
         session.origin
       );
 
-      console.log('  ', session.state.metadata?.title ?? '(no title)');
+      print('  ', session.state.metadata?.title ?? '(no title)');
 
       if (session.state.metadata?.artist) {
-        console.log('  ', session.state.metadata.artist);
+        print('  ', session.state.metadata.artist);
       }
 
       if (session.actions.length > 0) {
@@ -41,14 +41,10 @@ export function ls(options: { all: boolean }) {
           return actionToCommand[action];
         });
 
-        console.log(
-          '  ',
-          'commands:',
-          Array.from(new Set(commands)).join(', ')
-        );
+        print('  ', 'commands:', Array.from(new Set(commands)).join(', '));
       }
 
-      console.log('');
+      print('');
     });
 
     done();

@@ -1,5 +1,5 @@
 import { CliCommand, SimpleActionMessage } from '../../types';
-import { waitForSessions } from '../support';
+import { waitForSessions, print } from '../support';
 
 /**
  * Create a CLI command handler that can take action on a media session.
@@ -17,7 +17,7 @@ export function createActionCommand(
       { getSessionById: id },
       ({ client, done, session, sessionSource }) => {
         if (session?.actions.includes(action) === false) {
-          console.log(`media session ${id} doesn't support ${command} command`);
+          print(`media session ${id} doesn't support ${command} command`);
           done();
         }
 
@@ -28,7 +28,7 @@ export function createActionCommand(
           actionArgs: undefined,
         });
 
-        console.log(`${command} command sent to media session ${id}`);
+        print(`${command} command sent to media session ${id}`);
 
         done();
       }

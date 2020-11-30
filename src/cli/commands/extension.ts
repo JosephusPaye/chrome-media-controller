@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import { print } from '../support';
+
 export function extension(extensionId: string) {
   const nativeManifestFile = path.resolve(
     __dirname,
@@ -21,5 +23,5 @@ export function extension(extensionId: string) {
 
   fs.writeFileSync(nativeManifestFile, JSON.stringify(manifest, null, '  '));
 
-  console.log('extension allowed:', origin);
+  print('extension allowed:', origin);
 }

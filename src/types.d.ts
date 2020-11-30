@@ -1,5 +1,7 @@
 declare var __DEV__: boolean;
 
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
 export type CliCommand =
   | 'pause'
   | 'play'
@@ -26,6 +28,7 @@ export interface Session {
   hasBeenPlayed: boolean;
   lastChange: SessionChange;
   lastChangeAt: number;
+  tabLastActivatedAt: number;
 }
 
 export interface Sessions {

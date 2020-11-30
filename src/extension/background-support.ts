@@ -97,13 +97,7 @@ export function parseSessionId(id: number | string): Partial<SessionSource> {
 /**
  * Remove all sessions from the given tab
  */
-export function removeTabSessions(id: number | string) {
-  const { tabId } = parseSessionId(id);
-
-  if (!tabId) {
-    return;
-  }
-
+export function removeTabSessions(tabId: number) {
   log('removing sessions for tab', tabId);
 
   const sessions = getSessions();
@@ -111,6 +105,24 @@ export function removeTabSessions(id: number | string) {
   Object.keys(sessions).forEach((key) => {
     if (key.startsWith(tabId + '.')) {
       delete sessions[key];
+    }
+  });
+
+  storeSessions(sessions);
+}
+
+/**
+ * Remove all sessions from the given tab
+ */
+export function updateTabLastActivatedAt(tabId: number) {
+  log('updating tabLastActivatedAt sessions for tab', tabId);
+
+  const now = Date.now();
+  const sessions = getSessions();
+
+  Object.keys(sessions).forEach((key) => {
+    if (key.startsWith(tabId + '.')) {
+      sessions[key].tabLastActivatedAt = now;
     }
   });
 

@@ -19,6 +19,7 @@ import {
   ChromeToNativeMessage,
   ContentToBackgroundMessage,
   BackgroundToContentMessage,
+  Optional,
   Session,
 } from '../types';
 
@@ -29,6 +30,7 @@ import {
   getSessions,
   storeSessions,
   removeTabSessions,
+  updateTabLastActivatedAt,
   removeStale,
 } from './background-support';
 
@@ -75,17 +77,18 @@ function connectToNative() {
  * Send the state of all current media sessions to the native host
  */
 function syncSessions(
-  extra?:
-    | { type: 'add'; session: Session }
+  change?:
+    | { type: 'add'; session: Optional<Session, 'tabLastActivatedAt'> }
     | { type: 'remove'; session: { id: string } }
 ) {
   const sessions = removeStale(getSessions() ?? {});
 
-  if (extra) {
-    if (extra.type === 'add') {
-      sessions[extra.session.id] = extra.session;
-    } else if (extra.type === 'remove') {
-      delete sessions[extra.session.id];
+  if (change) {
+    if (change.type === 'add') {
+      const session = sessions[change.session.id] ?? { tabLastActivatedAt: -1 };
+      sessions[change.session.id] = Object.assign({}, session, change.session);
+    } else if (change.type === 'remove') {
+      delete sessions[change.session.id];
     }
   }
 
@@ -200,8 +203,12 @@ function main() {
 
   // Listen for closed tabs and remove any sessions from them
   chrome.tabs.onRemoved.addListener((tabId) => {
-    log('tab closed, removing sessions', tabId);
     removeTabSessions(tabId);
+  });
+
+  // Listen for tab focus change and set `tabLastActivatedAt` for its sessions
+  chrome.tabs.onActivated.addListener(({ tabId }) => {
+    updateTabLastActivatedAt(tabId);
   });
 
   // Connect to the native host

@@ -50,8 +50,6 @@ export function storeSessions(newSessions: Sessions) {
  * Remove expired media sessions from the given object of sessions
  */
 export function removeStale(sessions: Sessions): Sessions {
-  console.log('removing stale, before', Object.keys(sessions));
-
   const nonStale: Sessions = {};
 
   Object.entries(sessions).forEach(([id, session]) => {
@@ -60,14 +58,12 @@ export function removeStale(sessions: Sessions): Sessions {
     // Remove sessions that have not been playing for more than an hour
     if (
       session.state.playbackState !== 'playing' &&
-      Date.now() - session.lastSyncAt > 60 * 60 * 1000
+      Date.now() - session.lastChangeAt > 60 * 60 * 1000
     ) {
       delete nonStale[id];
       log(`removed session that hasn't been playing for more than an hour`, id);
     }
   });
-
-  console.log('removing stale, after', Object.keys(nonStale));
 
   return nonStale;
 }

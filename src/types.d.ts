@@ -24,12 +24,37 @@ export interface Session {
   };
   actions: MediaSessionAction[];
   hasBeenPlayed: boolean;
-  lastSyncAt: number;
+  lastChange: SessionChange;
+  lastChangeAt: number;
 }
 
 export interface Sessions {
   [id: string]: Session;
 }
+
+export interface ActionAdded {
+  type: 'action-added';
+  action: MediaSessionAction;
+}
+
+export interface ActionRemoved {
+  type: 'action-removed';
+  action: MediaSessionAction;
+}
+
+export interface MetadataChanged {
+  type: 'metadata-changed';
+}
+
+export interface PlaybackStateChanged {
+  type: 'playback-state-changed';
+}
+
+export type SessionChange =
+  | ActionAdded
+  | ActionRemoved
+  | MetadataChanged
+  | PlaybackStateChanged;
 
 export interface RequestSyncMessage {
   action: 'request-sync';
@@ -87,8 +112,7 @@ export type ContentSyncMessage = Pick<
   'state' | 'actions' | 'hasBeenPlayed'
 > & {
   type: 'sync';
-  actionAdded?: string;
-  actionRemoved?: string;
+  change: SessionChange;
 };
 
 export type ContentToBackgroundMessage =

@@ -128,7 +128,7 @@ export function waitForSessions(
       }
 
       const sessionsList = Object.values(sessions).sort(
-        (a, z) => a.lastSyncAt - z.lastSyncAt
+        (a, z) => a.lastChangeAt - z.lastChangeAt
       );
 
       callback!({

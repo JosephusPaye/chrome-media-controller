@@ -1,4 +1,8 @@
-import { InjectedToContentMessage, ContentToInjectedMessage } from '../types';
+import {
+  InjectedToContentMessage,
+  ContentToInjectedMessage,
+  SessionChange,
+} from '../types';
 
 type MediaSessionActionHandler = (details: MediaSessionActionDetails) => void;
 
@@ -35,10 +39,7 @@ function proxyMediaSessionApi() {
    * Sychronise the state of the given mediaSession
    * with the content script
    */
-  function syncState(
-    mediaSession: MediaSession,
-    extra?: { actionAdded: string } | { actionRemoved: string }
-  ) {
+  function syncState(mediaSession: MediaSession, change: SessionChange) {
     let metadata = null;
 
     if (mediaSession.metadata) {
@@ -50,13 +51,13 @@ function proxyMediaSessionApi() {
 
     sendToContentScript({
       type: 'sync',
+      change,
       state: {
         metadata,
         playbackState: mediaSession.playbackState,
       },
       actions: [...actionHandlers.keys()],
       hasBeenPlayed,
-      ...extra,
     });
   }
 
@@ -90,14 +91,14 @@ function proxyMediaSessionApi() {
               actionHandlers.delete(action);
 
               // Sync state to reflect the removed action
-              syncState(target, { actionRemoved: action });
+              syncState(target, { type: 'action-removed', action });
             } else {
               // Add the handler to our list of action handlers
               // so we can manually call play(), pause(), etc
               actionHandlers.set(action, handler);
 
               // Sync state to reflect the added action
-              syncState(target, { actionAdded: action });
+              syncState(target, { type: 'action-added', action });
             }
 
             // Call the default `setActionHandler()` to register
@@ -128,7 +129,12 @@ function proxyMediaSessionApi() {
       (target as any)[key] = value;
 
       // Sync updated state
-      syncState(target);
+      syncState(target, {
+        type:
+          key === 'playbackState'
+            ? 'playback-state-changed'
+            : 'metadata-changed',
+      });
 
       // Success
       return true;

@@ -106,7 +106,24 @@ function onContentScriptMessage(
   sender: chrome.runtime.MessageSender,
   sendResponse: (response?: any) => void
 ) {
-  log('message from content script', message, sender);
+  log(
+    'message from content script',
+    { type: message.type },
+    {
+      ...(message.type === 'sync'
+        ? {
+            ...message.change,
+            ...(message.change.type === 'playback-state-changed'
+              ? { playbackState: message.state.playbackState }
+              : {}),
+          }
+        : {}),
+    },
+    {
+      session: `${sender.tab?.id}.${sender.frameId}`,
+      origin: (sender as any).origin,
+    }
+  );
 
   // Handle a `get-frame-id` request
   if (message.type === 'get-frame-id') {
@@ -125,7 +142,9 @@ function onContentScriptMessage(
 
   const contentUnloaded = message.type === 'unloaded';
   const playActionRemoved =
-    message.type === 'sync' && message.actionRemoved === 'play';
+    message.type === 'sync' &&
+    message.change.type === 'action-removed' &&
+    message.change.action === 'play';
 
   // Remove sessions that have unloaded or had their play action removed
   if (contentUnloaded || playActionRemoved) {
@@ -146,7 +165,8 @@ function onContentScriptMessage(
         origin: (sender as any).origin,
         state: message.state,
         actions: message.actions,
-        lastSyncAt: Date.now(),
+        lastChange: message.change,
+        lastChangeAt: Date.now(),
         hasBeenPlayed: message.hasBeenPlayed,
       },
     });

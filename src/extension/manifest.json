@@ -21,5 +21,5 @@
     "persistent": true
   },
   "optional_permissions": ["http://*/*", "https://*/*"],
-  "permissions": ["nativeMessaging"]
+  "permissions": ["nativeMessaging", "contextMenus"]
 }

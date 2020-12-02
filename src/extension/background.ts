@@ -1,3 +1,14 @@
+// An annoying unhandled promise rejection happens in the webext-dynamic-content-scripts code
+window.addEventListener('unhandledrejection', function (event) {
+  console.warn(
+    'Unhandled rejection (promise: ',
+    event.promise,
+    ', reason: ',
+    event.reason,
+    ').'
+  );
+});
+
 import 'webext-dynamic-content-scripts';
 import addDomainPermissionToggle from 'webext-domain-permission-toggle';
 

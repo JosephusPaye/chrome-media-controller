@@ -8,10 +8,11 @@
  * On each message to this background script, we also clean up any expired sessions.
  * We consider a session to have expire when:
  *    - a 'play' action handler is removed on it
- *    - the tab or frame it's in gets unloaded
+ *    - the tab or frame it's in gets unloaded or closed
  *    - it has not been in the 'playing' state for more than an hour
  *
- * If the native connection fails, we retry every minute up to 5 times.
+ * If the native connection fails, we retry using an exponential backup strategy:
+ * 1ms, 10ms, 100ms, 1000ms, etc, up to once every every minute.
  */
 
 import {
@@ -42,10 +43,14 @@ type SendToContent = (
 
 type SendToNative = (message: ChromeToNativeMessage) => void;
 
-const MAX_CONNECTION_ATTEMPTS = 5;
-
-let totalConnectionAttempts = 0;
+let reconnectionAttempts = 0;
+let successfulConnectionTimeout: number | undefined;
 let nativePort: chrome.runtime.Port | undefined;
+
+function exponentialDelay(totalConnectionAttempts: number) {
+  // 1ms, 10ms, 100ms, 1000ms, ..., 1min
+  return Math.min(10 ** totalConnectionAttempts, 60 * 1000);
+}
 
 /**
  * Connect to the native host
@@ -57,20 +62,32 @@ function connectToNative() {
 
   nativePort = chrome.runtime.connectNative(hostName);
   nativePort.onMessage.addListener(onNativeMessage);
-  totalConnectionAttempts++;
+  reconnectionAttempts++;
 
   nativePort.onDisconnect.addListener(() => {
-    error('disconnected from native host', chrome.runtime.lastError?.message);
+    error('disconnected from native host:', chrome.runtime.lastError?.message);
 
+    // Clear the successful connection timeout,
+    // since it resets the reconnection attempts
+    if (successfulConnectionTimeout) {
+      window.clearTimeout(successfulConnectionTimeout);
+    }
+
+    successfulConnectionTimeout = undefined;
     nativePort = undefined;
 
-    if (totalConnectionAttempts <= MAX_CONNECTION_ATTEMPTS) {
-      log('will attempt to connect to native host again in 1 minute');
-      setTimeout(connectToNative, 1 * 60 * 1000);
-    } else {
-      log('native host connection attempts exhausted');
-    }
+    const reconnectDelay = exponentialDelay(reconnectionAttempts);
+
+    log(`will attempt to connect to native host again in ${reconnectDelay} ms`);
+    setTimeout(connectToNative, reconnectDelay);
   });
+
+  // If onDisconnect() isn't triggerred after two seconds, then we had
+  // a successful connection, so clear the reconnection attempts
+  successfulConnectionTimeout = window.setTimeout(() => {
+    successfulConnectionTimeout = undefined;
+    reconnectionAttempts = 0;
+  }, 2000);
 }
 
 /**

@@ -88,6 +88,21 @@
         console.log('pause', { details });
         audioEl.pause();
       });
+
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        console.log('seekbackward', { details });
+        audioEl.currentTime -= details.seekOffset ?? 15;
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        console.log('seekforward', { details });
+        audioEl.currentTime += details.seekOffset ?? 15;
+      });
+
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        console.log('seekforward', { details });
+        audioEl.currentTime = details.seekTime;
+      });
     </script>
   </body>
 </html>

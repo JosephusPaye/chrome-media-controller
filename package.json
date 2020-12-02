@@ -24,7 +24,7 @@
     "uninstall": "node dist/uninstall.js"
   },
   "dependencies": {
-    "@josephuspaye/chrome-native-bridge": "^0.2.1",
+    "@josephuspaye/chrome-native-bridge": "^0.3.0",
     "@josephuspaye/pipe-emitter": "^0.2.1",
     "sade": "^1.7.4",
     "tslib": "^2.0.3",

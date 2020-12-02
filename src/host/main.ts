@@ -2,27 +2,23 @@ import fs from 'fs';
 import path from 'path';
 import { Server } from '@josephuspaye/pipe-emitter';
 import { ChromeNativeBridge } from '@josephuspaye/chrome-native-bridge';
+import { PassThrough } from 'stream';
 
-function createLogger() {
-  if (__DEV__) {
-    const filePath = path.join(__dirname, 'log.txt');
-    return fs.createWriteStream(filePath, { fd: fs.openSync(filePath, 'a') });
-  } else {
-    return undefined;
-  }
+let stderr: PassThrough | undefined;
+
+if (__DEV__) {
+  stderr = new PassThrough();
+  stderr.pipe(process.stderr);
+  stderr.pipe(fs.createWriteStream(path.join(__dirname, 'log.txt')));
 }
-
-const logFile = createLogger();
 
 function log(data: any, done?: (...args: any[]) => void) {
   if (__DEV__) {
-    logFile?.write(JSON.stringify(data, null, '  '));
-    logFile?.write('\n', done);
+    stderr?.write(JSON.stringify(data, null, '  ') + '\n', done);
   } else {
     done && done();
   }
 }
-
 function onExit(event: string, ...args: any[]) {
   log(
     {
@@ -48,6 +44,13 @@ function onExit(event: string, ...args: any[]) {
   process.on(eventType, onExit.bind(null, eventType));
 });
 
+const stdoutMirror = __DEV__
+  ? fs.createWriteStream(path.join(__dirname, 'to-chrome.bin'))
+  : undefined;
+const stdinMirror = __DEV__
+  ? fs.createWriteStream(path.join(__dirname, 'from-chrome.bin'))
+  : undefined;
+
 let pipe: Server;
 
 const bridge = new ChromeNativeBridge(
@@ -55,13 +58,14 @@ const bridge = new ChromeNativeBridge(
   process.stdin,
   process.stdout,
   {
-    onMessage(message) {
-      log(message);
+    mirrorInputTo: stdinMirror,
+    mirrorOutputTo: stdoutMirror,
 
+    onMessage(message) {
       if (pipe) {
         pipe.emit('message', message);
       } else {
-        log('got message but no pipe');
+        log('got message from chrome but no pipe to forward to');
       }
     },
 
@@ -70,7 +74,7 @@ const bridge = new ChromeNativeBridge(
     },
 
     onEnd() {
-      log('stdin ended', () => {
+      log('stdin ended, exiting', () => {
         process.exit();
       });
     },
@@ -79,7 +83,7 @@ const bridge = new ChromeNativeBridge(
 
 pipe = new Server('chrome-media-controller', {
   onError(err) {
-    log(['pipe error', err], () => {
+    log(['server pipe error, exiting', err], () => {
       process.exit();
     });
   },
@@ -87,6 +91,7 @@ pipe = new Server('chrome-media-controller', {
 
 pipe.on('message', (message) => {
   bridge.emit(message);
+  fs.fsyncSync(process.stdout.fd); // flush stdout
 });
 
 log({
@@ -94,4 +99,5 @@ log({
   pid: process.pid,
   origin: bridge.origin,
   parentWindow: bridge.parentWindow,
+  args: process.argv,
 });

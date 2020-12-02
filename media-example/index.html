@@ -58,6 +58,7 @@
 
     <script>
       const audioEl = document.querySelector('audio');
+      audioEl.volume = 0.25;
 
       audioEl.addEventListener('play', () => {
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -91,17 +92,26 @@
 
       navigator.mediaSession.setActionHandler('seekbackward', (details) => {
         console.log('seekbackward', { details });
-        audioEl.currentTime -= details.seekOffset ?? 15;
+        audioEl.currentTime = Math.max(
+          0,
+          audioEl.currentTime - (details.seekOffset ?? 15)
+        );
       });
 
       navigator.mediaSession.setActionHandler('seekforward', (details) => {
         console.log('seekforward', { details });
-        audioEl.currentTime += details.seekOffset ?? 15;
+        audioEl.currentTime = Math.min(
+          audioEl.duration,
+          audioEl.currentTime + (details.seekOffset ?? 15)
+        );
       });
 
       navigator.mediaSession.setActionHandler('seekto', (details) => {
-        console.log('seekforward', { details });
-        audioEl.currentTime = details.seekTime;
+        console.log('seekto', { details });
+        audioEl.currentTime = Math.max(
+          0,
+          Math.min(audioEl.duration, details.seekTime)
+        );
       });
     </script>
   </body>

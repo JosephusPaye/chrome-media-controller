@@ -1,4 +1,5 @@
 import k from 'kleur';
+import { CliCommand } from '../../types';
 import { waitForSessions, print } from '../support';
 
 export const actionToCommand = {
@@ -12,6 +13,18 @@ export const actionToCommand = {
   skipad: 'skipad',
   stop: 'stop',
 };
+
+const commandsOrder: CliCommand = [
+  'pause',
+  'play',
+  'prev',
+  'next',
+  'seekb',
+  'seekf',
+  'seek',
+  'skipad',
+  'stop',
+];
 
 export function ls(options: { all: boolean }) {
   waitForSessions(({ done, sessionsList }) => {
@@ -32,9 +45,13 @@ export function ls(options: { all: boolean }) {
 
       const commands =
         session.actions.length > 0
-          ? session.actions.map((action) => {
-              return actionToCommand[action];
-            })
+          ? session.actions
+              .map((action) => {
+                return actionToCommand[action];
+              })
+              .sort((a, z) => {
+                return commandsOrder.indexOf(a) - commandsOrder.indexOf(z);
+              })
           : [];
 
       if (commands.length > 0) {

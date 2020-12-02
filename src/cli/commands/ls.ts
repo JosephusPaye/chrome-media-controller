@@ -14,7 +14,7 @@ export const actionToCommand = {
   stop: 'stop',
 };
 
-const commandsOrder: CliCommand = [
+const commandsOrder: CliCommand[] = [
   'pause',
   'play',
   'prev',

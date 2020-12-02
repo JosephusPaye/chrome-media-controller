@@ -7,6 +7,8 @@ export type CliCommand =
   | 'play'
   | 'toggle'
   | 'seek'
+  | 'seekb'
+  | 'seekf'
   | 'next'
   | 'prev'
   | 'stop'

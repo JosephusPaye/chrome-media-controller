@@ -1,3 +1,4 @@
+import k from 'kleur';
 import { waitForSessions, print } from '../support';
 
 export const actionToCommand = {
@@ -23,29 +24,38 @@ export function ls(options: { all: boolean }) {
       done();
     }
 
-    list.forEach((session) => {
-      print(
-        session.id,
-        `(${session.state.playbackState.replace('none', 'unknown')})`,
-        session.origin
-      );
+    const sessions = list.map((session) => {
+      const status = [
+        k.green(session.id),
+        k.green(`(${session.state.playbackState.replace('none', 'unknown')})`),
+      ];
 
-      print('  ', session.state.metadata?.title ?? '(no title)');
+      const commands =
+        session.actions.length > 0
+          ? session.actions.map((action) => {
+              return actionToCommand[action];
+            })
+          : [];
+
+      if (commands.length > 0) {
+        status[1] += k.green(':');
+        status.push(k.cyan(commands.join(', ')));
+      }
+
+      const metadata = [session.state.metadata?.title ?? '(no title)'];
 
       if (session.state.metadata?.artist) {
-        print('  ', session.state.metadata.artist);
+        metadata.push(session.state.metadata.artist);
       }
 
-      if (session.actions.length > 0) {
-        const commands = session.actions.map((action) => {
-          return actionToCommand[action];
-        });
+      metadata.push(session.origin);
 
-        print('  ', 'commands:', Array.from(new Set(commands)).join(', '));
-      }
-
-      print('');
+      return [status.join(' '), ...metadata.map((meta) => '  ' + meta)].join(
+        '\n'
+      );
     });
+
+    print(sessions.join('\n\n'));
 
     done();
   });

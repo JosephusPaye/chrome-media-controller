@@ -17,7 +17,7 @@ export function createActionCommand(
       { getSessionById: id },
       ({ client, done, session, sessionSource }) => {
         if (session?.actions.includes(action) === false) {
-          print(`media session ${id} doesn't support ${command} command`);
+          print(`${id} doesn't support ${command}`);
           done();
         }
 
@@ -28,7 +28,7 @@ export function createActionCommand(
           actionArgs: undefined,
         });
 
-        print(`${command} command sent to media session ${id}`);
+        print(`${command} command sent to ${id}`);
 
         done();
       }

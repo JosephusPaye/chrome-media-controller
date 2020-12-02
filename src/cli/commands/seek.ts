@@ -1,5 +1,5 @@
 import { SeekAbsoluteMessage, SeekRelativeMessage } from '../../types';
-import { waitForSessions, print } from '../support';
+import { waitForSessions, print, log } from '../support';
 
 export function createSeekCommand(
   command: 'seekb' | 'seekf' | 'seek',
@@ -17,7 +17,7 @@ export function createSeekCommand(
       { getSessionById: id },
       ({ client, done, session, sessionSource }) => {
         if (session?.actions.includes(action) === false) {
-          print(`media session ${id} doesn't support ${command} command`);
+          print(`${id} doesn't support ${command}`);
           done();
         }
 
@@ -32,9 +32,10 @@ export function createSeekCommand(
             },
           };
 
-          client.emit('message', message);
+          log('seek message', message);
 
-          print(`seek sent to media session ${id}`, message);
+          client.emit('message', message);
+          print(`${command} sent to ${id}`);
         } else {
           const message: SeekRelativeMessage = {
             tabId: sessionSource!.tabId,
@@ -45,9 +46,10 @@ export function createSeekCommand(
             },
           };
 
-          client.emit('message', message);
+          log('seek message', message);
 
-          print(`seek sent to media session ${id}`, message);
+          client.emit('message', message);
+          print(`${command} sent to ${id}`);
         }
 
         done();

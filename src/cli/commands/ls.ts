@@ -50,7 +50,10 @@ export function ls(options: { all: boolean }) {
                 return actionToCommand[action];
               })
               .sort((a, z) => {
-                return commandsOrder.indexOf(a) - commandsOrder.indexOf(z);
+                return (
+                  commandsOrder.indexOf(a as CliCommand) -
+                  commandsOrder.indexOf(z as CliCommand)
+                );
               })
           : [];
 

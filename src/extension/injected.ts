@@ -167,7 +167,7 @@ function proxyMediaSessionApi() {
       // Act on action messages like play, pause, etc
       const handler = actionHandlers.get(message.data.action);
 
-      log('triggering action from content script', handler);
+      log('triggering action from content script', message.data.action);
 
       if (handler) {
         handler({ action: message.data.action, ...message.data.actionArgs });

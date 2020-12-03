@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import sade from 'sade';
 import { createActionCommand } from './commands/action';
 import { extension } from './commands/extension';

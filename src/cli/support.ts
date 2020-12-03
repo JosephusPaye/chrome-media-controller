@@ -31,14 +31,14 @@ export function connect() {
         } else {
           print('unable to communicate with Chrome:', error.type);
         }
-        process.exit();
+        process.exit(1);
       },
       onConnect() {
         client.emit('message', { action: 'request-sync' });
       },
       onDisconnect() {
         print('disconnected from Chrome');
-        process.exit();
+        process.exit(1);
       },
     }
   );
@@ -58,6 +58,7 @@ export type SessionsCallback = (data: {
 export interface WaitForSessionOpts {
   timeout?: { delay: number; message: string };
   getSessionById?: string;
+  quiet?: boolean;
 }
 
 export function waitForSessions(callback: SessionsCallback): void;
@@ -69,7 +70,7 @@ export function waitForSessions(
   optionsOrCallback: WaitForSessionOpts | SessionsCallback,
   callback?: SessionsCallback
 ): void {
-  const { timeout, getSessionById } = Object.assign(
+  const { timeout, getSessionById, quiet } = Object.assign(
     {},
     {
       timeout: {
@@ -100,16 +101,16 @@ export function waitForSessions(
     }
   }
 
-  function done() {
+  function done(exitCode = 0) {
     cleanUp();
-    process.exit();
+    process.exit(exitCode);
   }
 
   if (timeout.delay > 0) {
     timeoutRef = setTimeout(() => {
       print(timeout.message);
       cleanUp();
-      process.exit();
+      process.exit(1);
     }, timeout.delay * 1000);
   }
 
@@ -121,7 +122,9 @@ export function waitForSessions(
   }
 
   client.on('message', (message) => {
-    log('message received', message);
+    if (!quiet) {
+      log('message received', message);
+    }
 
     if (message?.type === 'sync') {
       const sessions = message.sessions as Sessions;
@@ -184,7 +187,7 @@ export function validateSessionId(id: string | number): SessionSource {
 
   if (tabId === undefined || frameId === undefined) {
     print('invalid session id');
-    process.exit();
+    process.exit(1);
   }
 
   return { tabId, frameId };

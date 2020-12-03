@@ -75,7 +75,7 @@ const bridge = new ChromeNativeBridge(
 
     onEnd() {
       log('stdin ended, exiting', () => {
-        process.exit();
+        process.exit(0);
       });
     },
   }
@@ -84,7 +84,7 @@ const bridge = new ChromeNativeBridge(
 pipe = new Server('chrome-media-controller', {
   onError(err) {
     log(['server pipe error, exiting', err], () => {
-      process.exit();
+      process.exit(1);
     });
   },
 });

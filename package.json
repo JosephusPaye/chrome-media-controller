@@ -13,7 +13,10 @@
     "cmc": "dist/cli/main.js"
   },
   "files": [
-    "dist"
+    "dist/cli",
+    "dist/host",
+    "dist/install.js",
+    "dist/uninstall.js"
   ],
   "scripts": {
     "build": "rollup -c rollup.config.js && yarn copy-assets",

@@ -1,7 +1,7 @@
 {
   "name": "Chrome Media Controller",
   "description": "Control media playback in Chrome from the command-line.",
-  "version": "1.0",
+  "version": "0.1.0",
   "manifest_version": 2,
   "content_scripts": [
     {

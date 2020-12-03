@@ -20,11 +20,11 @@ With the above, you can do things like setup global hotkeys to control media pla
 - Open Chrome and navigate to `chrome://extensions/`
 - Enable developer mode using the toggle at the top right of the page
 - Click "**Load unpacked**" and select the extracted zip folder of the extension
-- The extension will be installed and enabled on [YouTube](https://www.youtube.com) and [YouTube Music](https://music.youtube.com) by default. You can enable other sites using the instructions below.
+- The extension will be installed and enabled on YouTube and YouTube Music by default. You can enable other sites using the instructions below.
 
-## Enabling other sites
+## Enabling playback sites
 
-To keep the number of permissions the extension requires at a minimum, it only has access to YouTube and YouTube Music (the two sites I use personally) by default. You can enable access to other sites as follows:
+To keep the number of permissions the extension requires at a minimum, it only has access to [YouTube](https://www.youtube.com) and [YouTube Music](https://music.youtube.com) (the two sites I use personally) by default. You can enable access to other sites as follows:
 
 - Go to the site that plays the media you want to control, e.g. <https://open.spotify.com>
 - Right-click the extension icon in the browser toolbar and check "**Enable Chrome Media Controller on this domain**"

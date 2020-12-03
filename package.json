@@ -1,6 +1,6 @@
 {
   "name": "chrome-media-controller",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Control media playback in Chrome from the command-line.",
   "main": "dist/cli/main.js",
   "repository": "https://github.com/JosephusPaye/chrome-media-controller.git",

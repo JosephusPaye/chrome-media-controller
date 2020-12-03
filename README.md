@@ -21,6 +21,7 @@ With the above, you can do things like setup global hotkeys to control media pla
 - Enable developer mode using the toggle at the top right of the page
 - Click "**Load unpacked**" and select the extracted zip folder of the extension
 - The extension will be installed and enabled on YouTube and YouTube Music by default. You can enable other sites using the instructions below.
+- Copy the exension ID, go to a command line, and run `cmc extension [ID]`, replacing `[ID]` with the ID of the extension
 
 ## Enabling playback sites
 

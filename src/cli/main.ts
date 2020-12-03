@@ -46,12 +46,12 @@ program
 
 program
   .command('seekb <id> [offset]')
-  .describe('Skip a media session backward by a given time')
+  .describe('Seek a media session backward by a given time')
   .action(createSeekCommand('seekb', 'seekbackward'));
 
 program
   .command('seekf <id> [offset]')
-  .describe('Skip a media session forward by a given time')
+  .describe('Seek a media session forward by a given time')
   .action(createSeekCommand('seekf', 'seekforward'));
 
 program
@@ -66,7 +66,7 @@ program
 
 program
   .command('json')
-  .describe('Dump the list of current media sessions in JSON format.')
+  .describe('Dump the list of current media sessions in JSON format')
   .action(json);
 
 program

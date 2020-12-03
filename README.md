@@ -14,7 +14,7 @@ With the above, you can do things like setup global hotkeys to control media pla
 
 ## Installation
 
-- Run `npm install -g @josephuspaye/chrome-media-controller` to install the CLI
+- Run `npm install -g chrome-media-controller` to install the CLI
 - Download a zip of the latest version of the extension from [the releases page](https://github.com/JosephusPaye/chrome-media-controller/releases)
 - Extract the zip to a location of your choosing
 - Open Chrome and navigate to `chrome://extensions/`

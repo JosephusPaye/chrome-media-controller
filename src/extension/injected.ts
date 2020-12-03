@@ -38,8 +38,7 @@ function proxyMediaSessionApi() {
   }
 
   /**
-   * Sychronise the state of the given mediaSession
-   * with the content script
+   * Sychronise the state of the given mediaSession with the content script
    */
   function syncState(mediaSession: MediaSession, change: SessionChange) {
     let metadata = null;

@@ -10,7 +10,7 @@
     "access": "public"
   },
   "bin": {
-    "lookup": "dist/cli/main.js"
+    "cmc": "dist/cli/main.js"
   },
   "files": [
     "dist"

@@ -1,14 +1,15 @@
+import path from 'path';
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
-import path from 'path';
+import shebang from 'rollup-plugin-preserve-shebang';
 
 const devModeReplace = replace({
   __DEV__: process.env.BUILD !== 'production',
 });
 
-const nodePlugins = [typescript(), resolve(), devModeReplace];
+const nodePlugins = [shebang(), typescript(), resolve(), devModeReplace];
 
 const browserPlugins = [
   // CommonJS plugin is necessary to expand imports inline,

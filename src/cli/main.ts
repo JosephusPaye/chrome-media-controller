@@ -1,6 +1,7 @@
 import sade from 'sade';
 import { createActionCommand } from './commands/action';
 import { extension } from './commands/extension';
+import { json } from './commands/json';
 import { ls } from './commands/ls';
 import { createSeekCommand } from './commands/seek';
 
@@ -62,6 +63,11 @@ program
   .command('stop <id>')
   .describe('Stop a media session')
   .action(createActionCommand('stop', 'stop'));
+
+program
+  .command('json')
+  .describe('Dump the list of current media sessions in JSON format.')
+  .action(json);
 
 program
   .command('extension <extension-id>')

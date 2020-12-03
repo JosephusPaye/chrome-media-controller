@@ -24,6 +24,7 @@ const files = [
   'src/cli/support.ts',
   'src/cli/commands/action.ts',
   'src/cli/commands/extension.ts',
+  'src/cli/commands/json.ts',
   'src/cli/commands/ls.ts',
   'src/cli/commands/seek.ts',
   'src/extension/background.ts',

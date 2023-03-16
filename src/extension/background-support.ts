@@ -11,9 +11,7 @@ export const data: { sessions: Sessions } = {
  * Log the given messages
  */
 export function log(...messages: any) {
-  if (__DEV__) {
-    console.log('[cmc background]', ...messages);
-  }
+  console.log('[cmc background]', ...messages);
 }
 
 /**
@@ -63,7 +61,13 @@ export function removeStale(sessions: Sessions): Sessions {
       Date.now() - session.lastChangeAt > 60 * 60 * 1000
     ) {
       delete nonStale[id];
-      log(`removed session that hasn't been playing for more than an hour`, id);
+
+      if (__DEV__) {
+        log(
+          `removed session that hasn't been playing for more than an hour`,
+          id
+        );
+      }
     }
   });
 
@@ -100,7 +104,9 @@ export function parseSessionId(id: number | string): Partial<SessionSource> {
  * Remove all sessions from the given tab
  */
 export function removeTabSessions(tabId: number) {
-  log('removing sessions for tab', tabId);
+  if (__DEV__) {
+    log('removing sessions for tab', tabId);
+  }
 
   const sessions = getSessions();
 
@@ -117,7 +123,9 @@ export function removeTabSessions(tabId: number) {
  * Remove all sessions from the given tab
  */
 export function updateTabLastActivatedAt(tabId: number) {
-  log('updating tabLastActivatedAt sessions for tab', tabId);
+  if (__DEV__) {
+    log('updating tabLastActivatedAt sessions for tab', tabId);
+  }
 
   const now = Date.now();
   const sessions = getSessions();

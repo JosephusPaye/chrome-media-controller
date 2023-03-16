@@ -14,9 +14,7 @@ function proxyMediaSessionApi() {
    * Log the given messages
    */
   function log(...messages: any) {
-    if (__DEV__) {
-      console.log('[cmc injected]', ...messages);
-    }
+    console.log('[cmc injected]', ...messages);
   }
 
   /**
@@ -73,6 +71,10 @@ function proxyMediaSessionApi() {
      * @param key    The key being accessed
      */
     get(target: MediaSession, key: PropertyKey) {
+      if (__DEV__) {
+        log('Proxy get', key);
+      }
+
       const value = (target as any)[key];
 
       if (typeof value === 'function') {
@@ -127,6 +129,10 @@ function proxyMediaSessionApi() {
      * @param value  The value being assigned
      */
     set(target: MediaSession, key: PropertyKey, value: any) {
+      if (__DEV__) {
+        log('Proxy set', key, value);
+      }
+
       (target as any)[key] = value;
 
       // Sync updated state
@@ -166,12 +172,16 @@ function proxyMediaSessionApi() {
       // Act on action messages like play, pause, etc
       const handler = actionHandlers.get(message.data.action);
 
-      log('triggering action from content script', message.data.action);
+      if (__DEV__) {
+        log('triggering action from content script', message.data.action);
+      }
 
       if (handler) {
         handler({ action: message.data.action, ...message.data.actionArgs });
       } else {
-        log('action not found:', message.data);
+        if (__DEV__) {
+          log('action not found:', message.data);
+        }
       }
 
       event.returnValue = true;

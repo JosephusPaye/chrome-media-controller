@@ -74,7 +74,9 @@ function exponentialDelay(totalConnectionAttempts: number) {
 function connectToNative() {
   const hostName = 'io.github.josephuspaye.chromemediacontroller';
 
-  log('connecting to native host', hostName);
+  if (__DEV__) {
+    log('connecting to native host', hostName);
+  }
 
   nativePort = chrome.runtime.connectNative(hostName);
   nativePort.onMessage.addListener(onNativeMessage);
@@ -129,7 +131,9 @@ function syncSessions(
     (nativePort.postMessage as SendToNative)({ type: 'sync', sessions });
   }
 
-  log('sent sync message', { type: 'sync', sessions });
+  if (__DEV__) {
+    log('sent sync message', { type: 'sync', sessions });
+  }
 
   storeSessions(sessions);
 }
@@ -142,24 +146,26 @@ function onContentScriptMessage(
   sender: chrome.runtime.MessageSender,
   sendResponse: (response?: any) => void
 ) {
-  log(
-    'message from content script',
-    { type: message.type },
-    {
-      ...(message.type === 'sync'
-        ? {
-            ...message.change,
-            ...(message.change.type === 'playback-state-changed'
-              ? { playbackState: message.state.playbackState }
-              : {}),
-          }
-        : {}),
-    },
-    {
-      session: `${sender.tab?.id}.${sender.frameId}`,
-      origin: (sender as any).origin,
-    }
-  );
+  if (__DEV__) {
+    log(
+      'message from content script',
+      { type: message.type },
+      {
+        ...(message.type === 'sync'
+          ? {
+              ...message.change,
+              ...(message.change.type === 'playback-state-changed'
+                ? { playbackState: message.state.playbackState }
+                : {}),
+            }
+          : {}),
+      },
+      {
+        session: `${sender.tab?.id}.${sender.frameId}`,
+        origin: (sender as any).origin,
+      }
+    );
+  }
 
   // Handle a `get-frame-id` request
   if (message.type === 'get-frame-id') {
@@ -169,7 +175,9 @@ function onContentScriptMessage(
 
   // Ignore any message without a tab on the sender
   if (!sender.tab) {
-    log('ignoring message without tab information');
+    if (__DEV__) {
+      log('ignoring message without tab information');
+    }
     return;
   }
 
@@ -184,10 +192,12 @@ function onContentScriptMessage(
 
   // Remove sessions that have unloaded or had their play action removed
   if (contentUnloaded || playActionRemoved) {
-    log(
-      'removing unloaded session or session with a removed `play` action',
-      id
-    );
+    if (__DEV__) {
+      log(
+        'removing unloaded session or session with a removed `play` action',
+        id
+      );
+    }
     syncSessions({ type: 'remove', session: { id } });
     return;
   }
@@ -213,15 +223,21 @@ function onContentScriptMessage(
  * Handle a message from the native host
  */
 function onNativeMessage(message: NativeToChromeMessage) {
-  log('native message received', message);
+  if (__DEV__) {
+    log('native message received', message);
+  }
 
   if (message.action === 'request-sync') {
-    log('native requested sync, syncing sessions', message);
+    if (__DEV__) {
+      log('native requested sync, syncing sessions', message);
+    }
     syncSessions();
     return;
   }
 
-  log('forwarding action message to content script', message);
+  if (__DEV__) {
+    log('forwarding action message to content script', message);
+  }
 
   (chrome.tabs.sendMessage as SendToContent)(
     message.tabId,

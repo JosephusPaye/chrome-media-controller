@@ -21,9 +21,7 @@ let extensionContextInvalidated = false;
  * Log the given messages
  */
 function log(...messages: any) {
-  if (__DEV__) {
-    console.log('[cmc content]', ...messages);
-  }
+  console.log('[cmc content]', ...messages);
 }
 
 /**
@@ -41,14 +39,18 @@ function sendToBackgroundScript(
   responseCallback?: (response: any) => void
 ) {
   if (extensionContextInvalidated) {
-    log('not sending to background, extension context invalidated');
+    if (__DEV__) {
+      log('not sending to background, extension context invalidated');
+    }
     return;
   }
 
   try {
     chrome.runtime.sendMessage(message, responseCallback);
   } catch (err) {
-    log('unable to send to background script', err);
+    if (__DEV__) {
+      log('unable to send to background script', err);
+    }
     extensionContextInvalidated = true;
   }
 }
@@ -68,7 +70,9 @@ function onInjectScriptMessage(event: MessageEvent<InjectedToContentMessage>) {
     return;
   }
 
-  log('message from injected script, forwarding to background', message);
+  if (__DEV__) {
+    log('message from injected script, forwarding to background', message);
+  }
 
   // Forward the message to the background script
   sendToBackgroundScript(message.data);
@@ -87,7 +91,9 @@ function onBackgroundScriptMessage(
   sendResponse: (response?: any) => void
 ) {
   if (message.frameId === currentFrameId) {
-    log('message from background, forwarding to injected', message);
+    if (__DEV__) {
+      log('message from background, forwarding to injected', message);
+    }
     sendToInjectedScript(message);
     sendResponse({ handled: true });
   } else {
@@ -103,7 +109,9 @@ function main() {
   // background script. This happens when the underlying page is
   // unloaded on navigation or tab close.
   window.addEventListener('unload', () => {
-    log('unload triggered, sending message to background');
+    if (__DEV__) {
+      log('unload triggered, sending message to background');
+    }
     sendToBackgroundScript({ type: 'unloaded' });
   });
 

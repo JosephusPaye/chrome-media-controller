@@ -36,20 +36,15 @@ import type {
   ChromeToNativeMessage,
   ContentToBackgroundMessage,
   BackgroundToContentMessage,
-  Optional,
-  Session,
 } from '../types';
 
 import {
   log,
   error,
   handleLastError,
-  getSessions,
-  storeSessions,
-  removeTabSessions,
-  updateTabLastActivatedAt,
-  removeStale,
-} from './background-support';
+  exponentialDelay,
+} from './background-util';
+import { sessionData } from './SessionData';
 
 type SendToContent = (
   tabId: number,
@@ -62,11 +57,6 @@ type SendToNative = (message: ChromeToNativeMessage) => void;
 let reconnectionAttempts = 0;
 let successfulConnectionTimeout: number | undefined;
 let nativePort: chrome.runtime.Port | undefined;
-
-function exponentialDelay(totalConnectionAttempts: number) {
-  // 1ms, 10ms, 100ms, 1000ms, ..., 1min
-  return Math.min(10 ** totalConnectionAttempts, 60 * 1000);
-}
 
 /**
  * Connect to the native host
@@ -111,31 +101,21 @@ function connectToNative() {
 /**
  * Send the state of all current media sessions to the native host
  */
-function syncSessions(
-  change?:
-    | { type: 'add'; session: Optional<Session, 'tabLastActivatedAt'> }
-    | { type: 'remove'; session: { id: string } }
-) {
-  const sessions = removeStale(getSessions() ?? {});
-
-  if (change) {
-    if (change.type === 'add') {
-      const session = sessions[change.session.id] ?? { tabLastActivatedAt: -1 };
-      sessions[change.session.id] = Object.assign({}, session, change.session);
-    } else if (change.type === 'remove') {
-      delete sessions[change.session.id];
+function sendSessionsToNative() {
+  if (nativePort) {
+    const message: ChromeToNativeMessage = {
+      type: 'sync',
+      sessions: sessionData.getSessions(),
+    };
+    (nativePort.postMessage as SendToNative)(message);
+    if (__DEV__) {
+      log('sent sync message', message);
+    }
+  } else {
+    if (__DEV__) {
+      log('not sending sync message because native port is not connected');
     }
   }
-
-  if (nativePort) {
-    (nativePort.postMessage as SendToNative)({ type: 'sync', sessions });
-  }
-
-  if (__DEV__) {
-    log('sent sync message', { type: 'sync', sessions });
-  }
-
-  storeSessions(sessions);
 }
 
 /**
@@ -198,24 +178,25 @@ function onContentScriptMessage(
         id
       );
     }
-    syncSessions({ type: 'remove', session: { id } });
+
+    sessionData.removeSession(id);
+    sendSessionsToNative();
+
     return;
   }
 
   // Sync sessions with the native host when getting a 'sync' message
   if (message.type === 'sync') {
-    syncSessions({
-      type: 'add',
-      session: {
-        id,
-        origin: (sender as any).origin,
-        state: message.state,
-        actions: message.actions,
-        lastChange: message.change,
-        lastChangeAt: Date.now(),
-        hasBeenPlayed: message.hasBeenPlayed,
-      },
+    sessionData.addSession(id, {
+      id,
+      origin: (sender as any).origin,
+      state: message.state,
+      actions: message.actions,
+      lastChange: message.change,
+      lastChangeAt: Date.now(),
+      hasBeenPlayed: message.hasBeenPlayed,
     });
+    sendSessionsToNative();
   }
 }
 
@@ -231,7 +212,7 @@ function onNativeMessage(message: NativeToChromeMessage) {
     if (__DEV__) {
       log('native requested sync, syncing sessions', message);
     }
-    syncSessions();
+    sendSessionsToNative();
     return;
   }
 
@@ -252,12 +233,14 @@ function main() {
 
   // Listen for closed tabs and remove any sessions from them
   chrome.tabs.onRemoved.addListener((tabId) => {
-    removeTabSessions(tabId);
+    sessionData.removeSessionsBelongingToTab(tabId);
+    sendSessionsToNative();
   });
 
   // Listen for tab focus change and set `tabLastActivatedAt` for its sessions
   chrome.tabs.onActivated.addListener(({ tabId }) => {
-    updateTabLastActivatedAt(tabId);
+    sessionData.updateTabLastActivatedAt(tabId);
+    sendSessionsToNative();
   });
 
   // Connect to the native host

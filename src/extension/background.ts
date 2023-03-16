@@ -62,12 +62,20 @@ function onNativeConnection(newNativePort: chrome.runtime.Port) {
   nativePort.onMessage.addListener(onNativeMessage);
   nativePort.onDisconnect.addListener(() => {
     error('disconnected from native host:', chrome.runtime.lastError?.message);
-
-    nativePort = undefined;
-
-    // Reconnect to the native host
-    connectToNative(nativeHostName).then(onNativeConnection).catch(error);
+    reconnectToNative();
   });
+}
+
+function reconnectToNative() {
+  nativePort = undefined;
+
+  connectToNative(nativeHostName)
+    .then(onNativeConnection)
+    // If all connection attempts fail, retry connecting to the native host after 1 minute
+    .catch((err) => {
+      error(err);
+      setTimeout(reconnectToNative, 1 * 60 * 1000);
+    });
 }
 
 /**

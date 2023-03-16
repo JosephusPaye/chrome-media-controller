@@ -78,7 +78,7 @@ export function removeStale(sessions: Sessions): Sessions {
 const sessionIdRegex = /(\d+)\.(\d+)/;
 
 /**
- * Parse the given sesison id into tabId and frameId
+ * Parse the given session id into tabId and frameId
  */
 export function parseSessionId(id: number | string): Partial<SessionSource> {
   const parsed: Partial<SessionSource> = {

@@ -100,7 +100,7 @@ function connectToNative() {
     setTimeout(connectToNative, reconnectDelay);
   });
 
-  // If onDisconnect() isn't triggerred after two seconds, then we had
+  // If onDisconnect() isn't triggered after two seconds, then we had
   // a successful connection, so clear the reconnection attempts
   successfulConnectionTimeout = window.setTimeout(() => {
     successfulConnectionTimeout = undefined;

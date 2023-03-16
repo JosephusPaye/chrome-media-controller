@@ -28,7 +28,7 @@ addDomainPermissionToggle();
  *    - it has not been in the 'playing' state for more than an hour
  *
  * If the native connection fails, we retry using an exponential backup strategy:
- * 1ms, 10ms, 100ms, 1000ms, etc, up to once every every minute.
+ * 1ms, 10ms, 100ms, 1000ms, etc, up to 1 minute, then we stop trying.
  */
 
 import type {
@@ -42,7 +42,7 @@ import {
   log,
   error,
   handleLastError,
-  exponentialDelay,
+  connectToNative,
 } from './background-util';
 import { sessionData } from './SessionData';
 
@@ -54,48 +54,47 @@ type SendToContent = (
 
 type SendToNative = (message: ChromeToNativeMessage) => void;
 
-let reconnectionAttempts = 0;
-let successfulConnectionTimeout: number | undefined;
-let nativePort: chrome.runtime.Port | undefined;
+const nativeHostName = 'io.github.josephuspaye.chromemediacontroller';
+let nativePort: chrome.runtime.Port | undefined = undefined;
 
-/**
- * Connect to the native host
- */
-function connectToNative() {
-  const hostName = 'io.github.josephuspaye.chromemediacontroller';
-
-  if (__DEV__) {
-    log('connecting to native host', hostName);
-  }
-
-  nativePort = chrome.runtime.connectNative(hostName);
+function onNativeConnection(newNativePort: chrome.runtime.Port) {
+  nativePort = newNativePort;
   nativePort.onMessage.addListener(onNativeMessage);
-  reconnectionAttempts++;
-
   nativePort.onDisconnect.addListener(() => {
     error('disconnected from native host:', chrome.runtime.lastError?.message);
 
-    // Clear the successful connection timeout,
-    // since it resets the reconnection attempts
-    if (successfulConnectionTimeout) {
-      window.clearTimeout(successfulConnectionTimeout);
-    }
-
-    successfulConnectionTimeout = undefined;
     nativePort = undefined;
 
-    const reconnectDelay = exponentialDelay(reconnectionAttempts);
-
-    log(`will attempt to connect to native host again in ${reconnectDelay} ms`);
-    setTimeout(connectToNative, reconnectDelay);
+    // Reconnect to the native host
+    connectToNative(nativeHostName).then(onNativeConnection).catch(error);
   });
+}
 
-  // If onDisconnect() isn't triggered after two seconds, then we had
-  // a successful connection, so clear the reconnection attempts
-  successfulConnectionTimeout = window.setTimeout(() => {
-    successfulConnectionTimeout = undefined;
-    reconnectionAttempts = 0;
-  }, 2000);
+/**
+ * Handle a message from the native host
+ */
+function onNativeMessage(message: NativeToChromeMessage) {
+  if (__DEV__) {
+    log('native message received', message);
+  }
+
+  if (message.action === 'request-sync') {
+    if (__DEV__) {
+      log('native requested sync, syncing sessions', message);
+    }
+    sendSessionsToNative();
+    return;
+  }
+
+  if (__DEV__) {
+    log('forwarding action message to content script', message);
+  }
+
+  (chrome.tabs.sendMessage as SendToContent)(
+    message.tabId,
+    message,
+    handleLastError('tabs.sendMessage error')
+  );
 }
 
 /**
@@ -200,34 +199,7 @@ function onContentScriptMessage(
   }
 }
 
-/**
- * Handle a message from the native host
- */
-function onNativeMessage(message: NativeToChromeMessage) {
-  if (__DEV__) {
-    log('native message received', message);
-  }
-
-  if (message.action === 'request-sync') {
-    if (__DEV__) {
-      log('native requested sync, syncing sessions', message);
-    }
-    sendSessionsToNative();
-    return;
-  }
-
-  if (__DEV__) {
-    log('forwarding action message to content script', message);
-  }
-
-  (chrome.tabs.sendMessage as SendToContent)(
-    message.tabId,
-    message,
-    handleLastError('tabs.sendMessage error')
-  );
-}
-
-function main() {
+async function main() {
   // Listen for messages from content scripts
   chrome.runtime.onMessage.addListener(onContentScriptMessage);
 
@@ -244,7 +216,7 @@ function main() {
   });
 
   // Connect to the native host
-  connectToNative();
+  connectToNative(nativeHostName).then(onNativeConnection).catch(error);
 }
 
 main();

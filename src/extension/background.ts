@@ -31,7 +31,7 @@ addDomainPermissionToggle();
  * 1ms, 10ms, 100ms, 1000ms, etc, up to once every every minute.
  */
 
-import {
+import type {
   NativeToChromeMessage,
   ChromeToNativeMessage,
   ContentToBackgroundMessage,

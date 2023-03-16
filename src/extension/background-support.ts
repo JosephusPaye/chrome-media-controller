@@ -1,4 +1,4 @@
-import { Sessions, SessionSource } from '../types';
+import type { Sessions, SessionSource } from '../types';
 
 export const data: { sessions: Sessions } = {
   sessions: {},
